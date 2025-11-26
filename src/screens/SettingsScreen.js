@@ -10,13 +10,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZES } from '../constants/theme';
+import { SPACING, FONT_SIZES } from '../constants/theme';
+import { getThemeColors } from '../styles/globalStyles';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 
 const SettingsScreen = ({ navigation }) => {
   const { user, signOut } = useAuth();
-  const { themeColors } = useTheme();
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
   const [settings, setSettings] = useState({
     notifications: true,
     autoPlay: false,

@@ -41,7 +41,8 @@ const DetailsScreen = () => {
   const dispatch = useAppDispatch();
   const favorites = useFavorites();
   const watchlist = useWatchlist();
-  const { themeColors } = useTheme();
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
   
   const { item, type } = route.params || {};
   const [loading, setLoading] = useState(false);
@@ -234,30 +235,32 @@ const DetailsScreen = () => {
             imageStyle={styles.heroBackgroundImage}
           >
             <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.9)']}
+              colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,0.95)']}
               style={styles.heroGradient}
             >
               {/* Header Controls */}
               <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-                  <BlurView intensity={20} style={styles.blurButton}>
-                    <Feather name="arrow-left" size={24} color={themeColors.textPrimary} />
+                  <BlurView intensity={30} style={styles.blurButton}>
+                    <Feather name="arrow-left" size={24} color="#FFFFFF" />
                   </BlurView>
                 </TouchableOpacity>
                 
                 <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-                  <BlurView intensity={20} style={styles.blurButton}>
-                    <Feather name="share" size={22} color={themeColors.textPrimary} />
+                  <BlurView intensity={30} style={styles.blurButton}>
+                    <Feather name="share" size={22} color="#FFFFFF" />
                   </BlurView>
                 </TouchableOpacity>
               </View>
 
               {/* Content Info */}
               <View style={styles.heroContent}>
-                <Text style={[styles.heroTitle, { color: themeColors.textPrimary }]} numberOfLines={2}>
-                  {details.title}
-                </Text>
-                <Text style={[styles.heroSubtitle, { color: themeColors.textSecondary }]}>
+                <View style={styles.titleContainer}>
+                  <Text style={[styles.heroTitle, { color: '#FFFFFF' }]} numberOfLines={2}>
+                    {details.title}
+                  </Text>
+                </View>
+                <Text style={[styles.heroSubtitle, { color: '#CCCCCC' }]}>
                   {details.subtitle}
                 </Text>
                 
@@ -265,20 +268,20 @@ const DetailsScreen = () => {
                 <View style={styles.infoRow}>
                   {details.rating !== 'N/A' && (
                     <View style={styles.ratingBadge}>
-                      <Feather name="star" size={14} color={themeColors.accent || '#FFD700'} />
-                      <Text style={[styles.ratingText, { color: themeColors.accent || '#FFD700' }]}>{details.rating}</Text>
+                      <Feather name="star" size={14} color="#FFD700" />
+                      <Text style={[styles.ratingText, { color: '#FFD700' }]}>{details.rating}</Text>
                     </View>
                   )}
-                  <Text style={[styles.infoText, { color: themeColors.textSecondary }]}>{details.year}</Text>
-                  <Text style={[styles.infoText, { color: themeColors.textSecondary }]}>{details.duration}</Text>
-                  <Text style={[styles.infoText, { color: themeColors.textSecondary }]}>{details.genre}</Text>
+                  <Text style={[styles.infoText, { color: '#CCCCCC' }]}>{details.year}</Text>
+                  <Text style={[styles.infoText, { color: '#CCCCCC' }]}>{details.duration}</Text>
+                  <Text style={[styles.infoText, { color: '#CCCCCC' }]}>{details.genre}</Text>
                 </View>
 
                 {/* Action Buttons */}
                 <View style={styles.actionButtons}>
                   <TouchableOpacity style={[styles.playButton, { backgroundColor: themeColors.primary }]} onPress={handlePlay}>
-                    <Feather name="play" size={20} color={themeColors.background} />
-                    <Text style={[styles.playButtonText, { color: themeColors.background }]}>Play</Text>
+                    <Feather name="play" size={20} color="#FFFFFF" />
+                    <Text style={[styles.playButtonText, { color: '#FFFFFF' }]}>Play</Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity 
@@ -288,7 +291,7 @@ const DetailsScreen = () => {
                     <Ionicons 
                       name={isFavorite ? "heart" : "heart-outline"} 
                       size={18} 
-                      color={isFavorite ? themeColors.error : themeColors.textPrimary} 
+                      color={isFavorite ? themeColors.error : '#FFFFFF'} 
                     />
                   </TouchableOpacity>
                   
@@ -299,7 +302,7 @@ const DetailsScreen = () => {
                     <Ionicons 
                       name={isInWatchlist ? "bookmark" : "bookmark-outline"} 
                       size={18} 
-                      color={isInWatchlist ? themeColors.primary : themeColors.textPrimary} 
+                      color={isInWatchlist ? themeColors.primary : '#FFFFFF'} 
                     />
                   </TouchableOpacity>
                 </View>
@@ -425,6 +428,8 @@ const styles = StyleSheet.create({
   },
   blurButton: {
     padding: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 20,
   },
   heroContent: {
     paddingHorizontal: 20,
@@ -435,10 +440,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
     lineHeight: 34,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: {width: 1, height: 1},
+    textShadowRadius: 3,
+  },
+  titleContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   heroSubtitle: {
     fontSize: 16,
     marginBottom: 15,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: {width: 1, height: 1},
+    textShadowRadius: 2,
   },
   infoRow: {
     flexDirection: 'row',
@@ -463,6 +481,9 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 14,
     marginRight: 15,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: {width: 1, height: 1},
+    textShadowRadius: 2,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -484,9 +505,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     padding: 12,
     borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   activeButton: {
     backgroundColor: 'rgba(255, 107, 107, 0.3)',
