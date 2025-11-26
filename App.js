@@ -3,11 +3,11 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+// import { createDrawerNavigator } from '@react-navigation/drawer';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+// import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { COLORS, TYPOGRAPHY, SPACING, LAYOUT, COMMON_STYLES, BORDER_RADIUS, getThemeColors } from './src/styles/globalStyles';
 import { Provider } from 'react-redux';
 import store from './src/store';
@@ -32,7 +32,7 @@ import FavoritesScreen from './src/screens/FavoritesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-const Drawer = createDrawerNavigator();
+// const Drawer = createDrawerNavigator(); // Temporarily disabled for Expo Go compatibility
 
 // Loading screen component
 const LoadingScreen = () => {
@@ -66,102 +66,10 @@ const LoadingScreen = () => {
   );
 };
 
-// Custom Drawer Content
-const CustomDrawerContent = (props) => {
-  const { user, signOut } = useAuth();
-  const { isDarkMode } = useTheme();
-  const themeColors = getThemeColors(isDarkMode);
-  
-  const handleSignOut = () => {
-    signOut();
-  };
-
-  const themedStyles = StyleSheet.create({
-    drawerContainer: {
-      flex: 1,
-      backgroundColor: themeColors.surface,
-    },
-    drawerHeader: {
-      backgroundColor: themeColors.surface,
-      padding: SPACING['2xl'],
-      alignItems: 'center',
-      marginBottom: SPACING['3xl'],
-    },
-    userAvatar: {
-      width: 60,
-      height: 60,
-      borderRadius: BORDER_RADIUS.full,
-      backgroundColor: themeColors.surfaceLight,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: SPACING.md,
-      borderWidth: 2,
-      borderColor: themeColors.primary,
-    },
-    userName: {
-      fontSize: TYPOGRAPHY.xl,
-      fontWeight: 'bold',
-      color: themeColors.textPrimary,
-      marginBottom: SPACING.xs,
-    },
-    userEmail: {
-      color: themeColors.textSecondary,
-      fontSize: TYPOGRAPHY.sm,
-    },
-    drawerItems: {
-      flex: 1,
-    },
-    drawerFooter: {
-      borderTopWidth: 1,
-      borderTopColor: themeColors.border,
-      padding: SPACING['2xl'],
-    },
-    signOutButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: SPACING.md,
-      paddingHorizontal: SPACING.lg,
-      borderRadius: BORDER_RADIUS.md,
-      backgroundColor: themeColors.surfaceLight,
-      marginBottom: SPACING.md,
-    },
-    signOutText: {
-      color: themeColors.error,
-      fontSize: TYPOGRAPHY.lg,
-      fontWeight: '500',
-      marginLeft: SPACING.md,
-    },
-  });
-
-  return (
-    <DrawerContentScrollView {...props} style={themedStyles.drawerContainer}>
-      {/* User Profile Section */}
-      <View style={themedStyles.drawerHeader}>
-        <View style={themedStyles.userAvatar}>
-          <Feather name="user" size={32} color={themeColors.primary} />
-        </View>
-        <Text style={themedStyles.userName}>{user?.name || 'User'}</Text>
-        <Text style={themedStyles.userEmail}>{user?.email}</Text>
-      </View>
-      
-      {/* Drawer Items */}
-      <View style={themedStyles.drawerItems}>
-        <DrawerItemList {...props} />
-      </View>
-      
-      {/* Theme Toggle */}
-      <View style={themedStyles.drawerFooter}>
-        <ThemeToggle showLabel style={{ marginBottom: SPACING.md }} />
-        
-        {/* Sign Out Button */}
-        <TouchableOpacity style={themedStyles.signOutButton} onPress={handleSignOut}>
-          <Feather name="log-out" size={20} color={themeColors.error} />
-          <Text style={themedStyles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
-      </View>
-    </DrawerContentScrollView>
-  );
-};
+// Custom Drawer Content - Removed for stack navigation compatibility
+// This component has been commented out because it depends on @react-navigation/drawer
+// which requires react-native-reanimated that causes worklets errors on iOS
+// Profile and Settings are now accessible via bottom tabs instead
 
 // Home Stack Navigator (includes search functionality)
 const HomeStackNavigator = () => {
@@ -364,6 +272,10 @@ const MainTabNavigator = () => {
             iconName = 'radio';
           } else if (route.name === 'Favorites') {
             iconName = 'heart';
+          } else if (route.name === 'Profile') {
+            iconName = 'user';
+          } else if (route.name === 'Settings') {
+            iconName = 'settings';
           }
 
           return <Feather name={iconName} size={size} color={color} />;
@@ -389,63 +301,44 @@ const MainTabNavigator = () => {
       <Tab.Screen name="Music" component={MusicStackNavigator} />
       <Tab.Screen name="Podcasts" component={PodcastsStackNavigator} />
       <Tab.Screen name="Favorites" component={FavoritesStackNavigator} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 };
 
-// Main Drawer Navigator (wraps the tab navigator)
-const MainDrawerNavigator = () => {
+// Main Navigator (temporarily using stack instead of drawer for Expo Go compatibility)
+const MainNavigator = () => {
   const { isDarkMode } = useTheme();
   const themeColors = getThemeColors(isDarkMode);
 
   return (
-    <Drawer.Navigator
-      drawerContent={(props) => <CustomDrawerContent {...props} />}
+    <Stack.Navigator
       screenOptions={{
-        headerShown: false,
-        drawerStyle: {
+        headerShown: true,
+        headerStyle: {
           backgroundColor: themeColors.surface,
-          width: 280,
+          borderBottomWidth: 1,
+          borderBottomColor: themeColors.border,
         },
-        drawerActiveTintColor: themeColors.primary,
-        drawerInactiveTintColor: themeColors.textSecondary,
-        drawerLabelStyle: {
-          fontSize: TYPOGRAPHY.lg,
-          fontWeight: '500',
+        headerTintColor: themeColors.textPrimary,
+        headerTitleStyle: {
+          fontSize: TYPOGRAPHY.xl,
+          fontWeight: 'bold',
+          color: themeColors.textPrimary,
         },
+        cardStyle: { backgroundColor: themeColors.background },
       }}
     >
-      <Drawer.Screen 
+      <Stack.Screen 
         name="MainTabs" 
         component={MainTabNavigator}
         options={{
-          drawerLabel: 'Home',
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
+          title: 'StreamBox',
+          headerRight: () => <ThemeToggle />,
         }}
       />
-      <Drawer.Screen 
-        name="Profile" 
-        component={ProfileScreen}
-        options={{
-          drawerLabel: 'Profile',
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Drawer.Screen 
-        name="Settings" 
-        component={SettingsScreen}
-        options={{
-          drawerLabel: 'Settings',
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
-          ),
-        }}
-      />
-    </Drawer.Navigator>
+    </Stack.Navigator>
   );
 };
 
@@ -479,7 +372,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <MainDrawerNavigator /> : <AuthStackNavigator />}
+      {isAuthenticated ? <MainNavigator /> : <AuthStackNavigator />}
       <StatusBar 
         style={isDarkMode ? "light" : "dark"} 
         backgroundColor={themeColors.background} 
@@ -522,6 +415,7 @@ const styles = StyleSheet.create({
   drawerContainer: {
     backgroundColor: COLORS.surface,
   },
+  /* Drawer styles commented out for stack navigation
   drawerHeader: {
     padding: SPACING['2xl'],
     borderBottomWidth: 1,
@@ -571,4 +465,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: SPACING.md,
   },
+  */
 });

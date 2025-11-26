@@ -192,8 +192,6 @@ const HomeScreen = ({ navigation }) => {
 
   const loadTrendingContent = async (showLoading = true) => {
     try {
-      if (showLoading) setLoading(true);
-      
       console.log('Starting to load trending content...');
       
       // Dispatch Redux actions to fetch content with better error tracking
@@ -231,8 +229,6 @@ const HomeScreen = ({ navigation }) => {
       
     } catch (error) {
       console.error('Error loading trending content:', error);
-    } finally {
-      if (showLoading) setLoading(false);
     }
   };
 
@@ -592,7 +588,6 @@ const HomeScreen = ({ navigation }) => {
           <TouchableOpacity 
             style={[styles.refreshButton, { backgroundColor: themeColors.primary }]}
             onPress={() => {
-              setLoading(true);
               loadTrendingContent();
             }}
             activeOpacity={0.8}
@@ -667,8 +662,6 @@ const HomeScreen = ({ navigation }) => {
             >
               <Ionicons name="search" size={24} color={themeColors.textPrimary} />
             </TouchableOpacity>
-            
-            <ThemeToggle style={styles.themeToggle} size={20} />
           </View>
         </View>
 
@@ -753,11 +746,6 @@ const styles = StyleSheet.create({
     padding: 4,
     marginRight: 12,
   },
-  themeToggle: {
-    marginRight: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
   headerLeft: {
     flex: 1,
   },
@@ -769,7 +757,7 @@ const styles = StyleSheet.create({
   greetingTopContainer: {
     alignItems: 'center',
     paddingVertical: 15,
-    marginTop: 10,
+    marginTop: 30,
   },
   greetingTop: {
     fontSize: 18,
