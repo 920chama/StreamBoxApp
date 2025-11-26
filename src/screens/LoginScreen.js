@@ -78,17 +78,17 @@ const LoginScreen = ({ navigation }) => {
 
           {/* Login Form */}
           <View style={styles.formContainer}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to continue your entertainment journey</Text>
+            <Text style={[styles.title, { color: themeColors.textPrimary }]}>Welcome Back</Text>
+            <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>Sign in to continue your entertainment journey</Text>
 
             {/* Email Input */}
             <View style={styles.inputContainer}>
-              <View style={[styles.inputWrapper, getFieldError('email') && styles.inputError]}>
-                <Feather name="mail" size={20} color={COLORS.textMuted} />
+              <View style={[styles.inputWrapper, { backgroundColor: themeColors.surface }, getFieldError('email') && styles.inputError]}>
+                <Feather name="mail" size={20} color={themeColors.textSecondary} />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: themeColors.textPrimary }]}
                   placeholder="Email address"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={themeColors.textSecondary}
                   value={values.email}
                   onChangeText={(text) => handleChange('email', text)}
                   onBlur={() => handleBlur('email')}
@@ -98,18 +98,18 @@ const LoginScreen = ({ navigation }) => {
                 />
               </View>
               {getFieldError('email') && (
-                <Text style={styles.errorText}>{getFieldError('email')}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{getFieldError('email')}</Text>
               )}
             </View>
 
             {/* Password Input */}
             <View style={styles.inputContainer}>
-              <View style={[styles.inputWrapper, getFieldError('password') && styles.inputError]}>
-                <Feather name="lock" size={20} color={COLORS.textMuted} />
+              <View style={[styles.inputWrapper, { backgroundColor: themeColors.surface }, getFieldError('password') && styles.inputError]}>
+                <Feather name="lock" size={20} color={themeColors.textSecondary} />
                 <TextInput
-                  style={[styles.input, styles.passwordInput]}
+                  style={[styles.input, styles.passwordInput, { color: themeColors.textPrimary }]}
                   placeholder="Password"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={themeColors.textSecondary}
                   value={values.password}
                   onChangeText={(text) => handleChange('password', text)}
                   onBlur={() => handleBlur('password')}
@@ -120,21 +120,21 @@ const LoginScreen = ({ navigation }) => {
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.passwordToggle}
                 >
-                  <Feather
-                    name={showPassword ? "eye-off" : "eye"}
-                    size={20}
-                    color={COLORS.textMuted}
+                  <Feather 
+                    name={showPassword ? 'eye-off' : 'eye'} 
+                    size={20} 
+                    color={themeColors.textSecondary} 
                   />
                 </TouchableOpacity>
               </View>
               {getFieldError('password') && (
-                <Text style={styles.errorText}>{getFieldError('password')}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{getFieldError('password')}</Text>
               )}
             </View>
 
             {/* Forgot Password */}
             <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+              <Text style={[styles.forgotPasswordText, { color: themeColors.primary }]}>Forgot your password?</Text>
             </TouchableOpacity>
 
             {/* Login Button */}
@@ -159,9 +159,9 @@ const LoginScreen = ({ navigation }) => {
 
             {/* Sign Up Link */}
             <View style={styles.signUpContainer}>
-              <Text style={styles.signUpText}>Don't have an account? </Text>
+              <Text style={[styles.signUpText, { color: themeColors.textSecondary }]}>Don't have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.signUpLink}>Sign Up</Text>
+                <Text style={[styles.signUpLink, { color: themeColors.primary }]}>Sign Up</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -174,7 +174,6 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   keyboardContainer: {
     flex: 1,
@@ -191,12 +190,10 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: FONT_SIZES['4xl'],
     fontWeight: 'bold',
-    color: COLORS.primary,
     marginBottom: SPACING.sm,
   },
   tagline: {
     fontSize: FONT_SIZES.base,
-    color: COLORS.textMuted,
     textAlign: 'center',
   },
   formContainer: {
@@ -205,13 +202,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES['2xl'],
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   subtitle: {
     fontSize: FONT_SIZES.base,
-    color: COLORS.textMuted,
     textAlign: 'center',
     marginBottom: SPACING['2xl'],
   },
@@ -221,7 +216,6 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     borderRadius: SPACING.base,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
@@ -235,7 +229,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: SPACING.base,
     fontSize: FONT_SIZES.base,
-    color: COLORS.text,
   },
   passwordInput: {
     flex: 1,
@@ -244,7 +237,6 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
   },
   errorText: {
-    color: COLORS.error,
     fontSize: FONT_SIZES.sm,
     marginTop: SPACING.xs,
     marginLeft: SPACING.sm,
@@ -254,7 +246,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   forgotPasswordText: {
-    color: COLORS.primary,
     fontSize: FONT_SIZES.sm,
   },
   loginButton: {

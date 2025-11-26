@@ -12,9 +12,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZES } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const SettingsScreen = ({ navigation }) => {
   const { user, signOut } = useAuth();
+  const { themeColors } = useTheme();
   const [settings, setSettings] = useState({
     notifications: true,
     autoPlay: false,
@@ -40,66 +42,66 @@ const SettingsScreen = ({ navigation }) => {
 
   const SettingItem = ({ icon, title, subtitle, value, onToggle, hasSwitch = false, hasChevron = false, onPress }) => (
     <TouchableOpacity
-      style={styles.settingItem}
+      style={[styles.settingItem, { backgroundColor: themeColors.surface }]}
       onPress={hasSwitch ? onToggle : onPress}
       disabled={hasSwitch}
     >
       <View style={styles.settingIcon}>
-        <Ionicons name={icon} size={24} color={COLORS.text} />
+        <Ionicons name={icon} size={24} color={themeColors.textPrimary} />
       </View>
       <View style={styles.settingContent}>
-        <Text style={styles.settingTitle}>{title}</Text>
-        {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
+        <Text style={[styles.settingTitle, { color: themeColors.textPrimary }]}>{title}</Text>
+        {subtitle && <Text style={[styles.settingSubtitle, { color: themeColors.textSecondary }]}>{subtitle}</Text>}
       </View>
       {hasSwitch && (
         <Switch
           value={value}
           onValueChange={onToggle}
-          trackColor={{ false: COLORS.border, true: COLORS.primary + '40' }}
-          thumbColor={value ? COLORS.primary : COLORS.textMuted}
+          trackColor={{ false: themeColors.border, true: themeColors.primary + '40' }}
+          thumbColor={value ? themeColors.primary : themeColors.textSecondary}
         />
       )}
       {hasChevron && (
-        <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+        <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
       )}
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <ScrollView>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            <Ionicons name="arrow-back" size={24} color={themeColors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>Settings</Text>
           <View style={styles.placeholder} />
         </View>
 
         {/* User Section */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: themeColors.surface }]}>
           <TouchableOpacity
-            style={styles.userSection}
+            style={[styles.userSection, { backgroundColor: themeColors.surface }]}
             onPress={() => navigation.navigate('Profile')}
           >
-            <View style={styles.userAvatar}>
-              <Ionicons name="person" size={32} color={COLORS.textMuted} />
+            <View style={[styles.userAvatar, { backgroundColor: themeColors.border }]}>
+              <Ionicons name="person" size={32} color={themeColors.textSecondary} />
             </View>
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{user?.name}</Text>
-              <Text style={styles.userEmail}>{user?.email}</Text>
+              <Text style={[styles.userName, { color: themeColors.textPrimary }]}>{user?.name}</Text>
+              <Text style={[styles.userEmail, { color: themeColors.textSecondary }]}>{user?.email}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
           </TouchableOpacity>
         </View>
 
         {/* Preferences */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+        <View style={[styles.section, { backgroundColor: themeColors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>Preferences</Text>
           <SettingItem
             icon="notifications-outline"
             title="Push Notifications"
@@ -135,8 +137,8 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         {/* Media Quality */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Media Quality</Text>
+        <View style={[styles.section, { backgroundColor: themeColors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>Media Quality</Text>
           <SettingItem
             icon="videocam-outline"
             title="High Quality Streaming"
@@ -155,8 +157,8 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         {/* Account */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+        <View style={[styles.section, { backgroundColor: themeColors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>Account</Text>
           <SettingItem
             icon="shield-outline"
             title="Privacy & Security"
@@ -180,8 +182,8 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         {/* Support */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
+        <View style={[styles.section, { backgroundColor: themeColors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>Support</Text>
           <SettingItem
             icon="help-circle-outline"
             title="Help Center"
@@ -210,10 +212,10 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         {/* Sign Out */}
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-            <Ionicons name="log-out-outline" size={24} color={COLORS.error} />
-            <Text style={styles.signOutText}>Sign Out</Text>
+        <View style={[styles.section, { backgroundColor: themeColors.surface }]}>
+          <TouchableOpacity style={[styles.signOutButton, { backgroundColor: themeColors.surface, borderColor: themeColors.error + '30' }]} onPress={handleSignOut}>
+            <Ionicons name="log-out-outline" size={24} color={themeColors.error} />
+            <Text style={[styles.signOutText, { color: themeColors.error }]}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -224,7 +226,6 @@ const SettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
@@ -232,7 +233,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   backButton: {
     padding: SPACING.sm,
@@ -241,7 +241,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZES.xl,
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'center',
   },
   placeholder: {
@@ -254,7 +253,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.base,
     fontWeight: '600',
-    color: COLORS.textMuted,
     marginBottom: SPACING.sm,
     marginTop: SPACING.md,
     textTransform: 'uppercase',
@@ -265,14 +263,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.md,
-    backgroundColor: COLORS.surface,
     borderRadius: SPACING.base,
   },
   userAvatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: COLORS.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -283,12 +279,10 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.text,
     marginBottom: SPACING.xs,
   },
   userEmail: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
   },
   settingItem: {
     flexDirection: 'row',
@@ -296,7 +290,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.md,
     marginBottom: SPACING.xs,
-    backgroundColor: COLORS.surface,
     borderRadius: SPACING.base,
   },
   settingIcon: {
@@ -310,12 +303,10 @@ const styles = StyleSheet.create({
   settingTitle: {
     fontSize: FONT_SIZES.base,
     fontWeight: '500',
-    color: COLORS.text,
     marginBottom: SPACING.xs / 2,
   },
   settingSubtitle: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
   },
   signOutButton: {
     flexDirection: 'row',
@@ -323,15 +314,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: SPACING.md,
     marginTop: SPACING.md,
-    backgroundColor: COLORS.surface,
     borderRadius: SPACING.base,
     borderWidth: 1,
-    borderColor: COLORS.error + '30',
   },
   signOutText: {
     fontSize: FONT_SIZES.base,
     fontWeight: '600',
-    color: COLORS.error,
     marginLeft: SPACING.sm,
   },
 });

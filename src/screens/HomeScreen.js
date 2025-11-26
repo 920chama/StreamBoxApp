@@ -9,6 +9,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -21,8 +22,13 @@ import {
   fetchTrendingMusic,
   fetchTrendingPodcasts,
   setFeaturedContent,
+  setTrendingMovies,
+  setTrendingMusic,
+  setTrendingPodcasts,
   addToFavorites,
   removeFromFavorites,
+  clearSampleData,
+  clearPersistentSampleData,
   addToWatchlist,
   removeFromWatchlist,
   persistFavoriteItem,
@@ -52,23 +58,124 @@ const HomeScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   
   // Redux selectors using correct state structure
-  const trendingMovies = useSelector(state => state.media.trendingMovies);
-  const trendingMusic = useSelector(state => state.media.trendingMusic);
-  const trendingPodcasts = useSelector(state => state.media.trendingPodcasts);
+  const trendingMovies = useSelector(state => state.media.trendingMovies) || [];
+  const trendingMusic = useSelector(state => state.media.trendingMusic) || [];
+  const trendingPodcasts = useSelector(state => state.media.trendingPodcasts) || [];
   const featured = useSelector(state => state.media.featuredContent);
   const loading = useSelector(state => state.media.loading);
-  const favorites = useSelector(state => state.media.favorites);
-  const watchlist = useSelector(state => state.media.watchlist);
+  const favorites = useSelector(state => state.media.favorites) || [];
+  const watchlist = useSelector(state => state.media.watchlist) || [];
+  
+  // Debug Redux state
+  console.log('HomeScreen Redux State:', {
+    moviesCount: trendingMovies?.length,
+    musicCount: trendingMusic?.length, 
+    podcastsCount: trendingPodcasts?.length,
+    isLoading: loading
+  });
   
   // Local state for UI
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   
   // Loading state is a boolean in our mediaSlice
   const isLoading = loading;
 
   useEffect(() => {
-    loadTrendingContent();
-    loadPersistedData();
+    // Force reload content immediately
+    const initializeData = async () => {
+      console.log('HomeScreen: Initializing data...');
+      
+      // Clear any old sample data from favorites/watchlist first
+      dispatch(clearPersistentSampleData());
+      
+      // Add immediate test data to verify UI works
+      const testMovies = [
+        {
+          id: 1,
+          title: "Avatar: The Way of Water",
+          overview: "Set more than a decade after the events of the first film, learn the story of the Sully family.",
+          poster_path: "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg",
+          vote_average: 8.5,
+          release_date: "2023-01-01"
+        },
+        {
+          id: 2,
+          title: "Black Panther: Wakanda Forever",
+          overview: "Queen Ramonda, Shuri, M'Baku, Okoye and the Dora Milaje fight to protect their nation.",
+          poster_path: "https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg",
+          vote_average: 7.8,
+          release_date: "2023-02-01"
+        }
+      ];
+
+      const testMusic = [
+        {
+          trackId: 1,
+          trackName: "Anti-Hero",
+          artistName: "Taylor Swift",
+          artworkUrl100: "https://picsum.photos/300/300?random=1",
+          trackTimeMillis: 200560,
+          trackPrice: 1.29
+        },
+        {
+          trackId: 2,
+          trackName: "Flowers",
+          artistName: "Miley Cyrus", 
+          artworkUrl100: "https://picsum.photos/300/300?random=2",
+          trackTimeMillis: 200000,
+          trackPrice: 1.29
+        }
+      ];
+
+      const testPodcasts = [
+        {
+          id: 1,
+          title: "The Joe Rogan Experience",
+          description: "The official podcast of comedian Joe Rogan featuring conversations with fascinating guests.",
+          image: "https://picsum.photos/300/300?random=3",
+          publisher: "Joe Rogan",
+          total_episodes: 2000,
+          explicit: false
+        },
+        {
+          id: 2,
+          title: "Crime Junkie",
+          description: "If you can never get enough true crime... Congratulations, you've found your people.",
+          image: "https://picsum.photos/300/300?random=4",
+          publisher: "audiochuck",
+          total_episodes: 400,
+          explicit: false
+        }
+      ];
+      
+      // Set test data immediately 
+      console.log('Setting test data...');
+      console.log('Test music URLs:', testMusic.map(m => m.artworkUrl100));
+      console.log('Test podcast URLs:', testPodcasts.map(p => p.image));
+      dispatch(setTrendingMovies(testMovies));
+      dispatch(setTrendingMusic(testMusic));
+      dispatch(setTrendingPodcasts(testPodcasts));
+      
+      await loadPersistedData();
+      
+      // Also try to load real data in the background
+      try {
+        await loadTrendingContent();
+      } catch (error) {
+        console.error('Error loading real content:', error);
+      }
+      
+      // Debug current data state
+      setTimeout(() => {
+        console.log('Post-initialization state:', {
+          movies: trendingMovies?.length,
+          music: trendingMusic?.length,
+          podcasts: trendingPodcasts?.length
+        });
+      }, 1000);
+    };
+    
+    initializeData();
   }, [dispatch]);
 
   const loadPersistedData = async () => {
@@ -83,17 +190,57 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const loadTrendingContent = async () => {
+  const loadTrendingContent = async (showLoading = true) => {
     try {
-      // Dispatch Redux actions to fetch content
-      await Promise.all([
+      if (showLoading) setLoading(true);
+      
+      console.log('Starting to load trending content...');
+      
+      // Dispatch Redux actions to fetch content with better error tracking
+      const results = await Promise.allSettled([
         dispatch(fetchTrendingMovies()),
         dispatch(fetchTrendingMusic()),
         dispatch(fetchTrendingPodcasts()),
       ]);
+      
+      // Log any failures with more detail
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const types = ['movies', 'music', 'podcasts'];
+          console.warn(`Failed to load trending ${types[index]}:`, result.reason);
+        } else {
+          const types = ['movies', 'music', 'podcasts'];
+          console.log(`Successfully loaded trending ${types[index]}`);
+        }
+      });
+      
+      // Check if all requests failed
+      const allFailed = results.every(result => result.status === 'rejected');
+      if (allFailed) {
+        console.warn('All content requests failed, using fallback data');
+      }
+      
+      // Force immediate state check
+      setTimeout(() => {
+        console.log('Post-load Redux state check:', {
+          movies: trendingMovies?.length,
+          music: trendingMusic?.length,
+          podcasts: trendingPodcasts?.length
+        });
+      }, 500);
+      
     } catch (error) {
       console.error('Error loading trending content:', error);
+    } finally {
+      if (showLoading) setLoading(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadTrendingContent(false);
+    await loadPersistedData();
+    setRefreshing(false);
   };
 
   const getTimeBasedGreeting = () => {
@@ -104,7 +251,6 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleSignOut = () => {
-    setShowUserMenu(false);
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out of StreamBox?',
@@ -123,26 +269,33 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const renderMediaCard = (item, type) => {
-    let title, subtitle, status, statusColor;
+    let title, subtitle, status, statusColor, imageUri;
     
     switch (type) {
       case 'movie':
         title = item.title || 'Unknown Movie';
         subtitle = item.overview ? item.overview.substring(0, 80) + '...' : 'No description available';
-        status = item.vote_average >= 8 ? 'Popular' : item.vote_average >= 6 ? 'Good' : 'Active';
+        status = item.vote_average >= 8 ? 'Popular' : item.vote_average >= 6 ? 'Good' : 'New';
         statusColor = item.vote_average >= 8 ? '#4CAF50' : item.vote_average >= 6 ? '#FF9800' : '#2196F3';
+        imageUri = getImageUri(item, type, title);
         break;
       case 'music':
         title = item.trackName || 'Unknown Track';
         subtitle = `by ${item.artistName || 'Unknown Artist'}`;
         status = item.trackPrice === 0 ? 'Free' : item.trackTimeMillis > 240000 ? 'Extended' : 'Popular';
         statusColor = item.trackPrice === 0 ? '#4CAF50' : '#FF6B6B';
+        // Use direct URL for music artwork with fallbacks
+        imageUri = item.artworkUrl100 || item.artworkUrl60 || item.artworkUrl || 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=♪';
+        console.log('Music imageUri:', imageUri, 'for track:', title);
         break;
       case 'podcast':
         title = item.title || 'Unknown Podcast';
         subtitle = item.description ? item.description.substring(0, 80) + '...' : `by ${item.publisher || 'Unknown Publisher'}`;
-        status = item.explicit ? 'Explicit' : item.total_episodes > 50 ? 'Active' : 'Upcoming';
+        status = item.explicit ? 'Explicit' : item.total_episodes > 50 ? 'Active' : 'New';
         statusColor = item.explicit ? '#F44336' : item.total_episodes > 50 ? '#4CAF50' : '#FF9800';
+        // Use direct URL for podcast images with fallbacks
+        imageUri = item.image || item.thumbnail || item.artworkUrl100 || 'https://via.placeholder.com/300x300/1a1a1a/ffffff?text=🎧';
+        console.log('Podcast imageUri:', imageUri, 'for podcast:', title);
         break;
     }
 
@@ -185,65 +338,76 @@ const HomeScreen = ({ navigation }) => {
       }
     };
 
-    const imageUri = getImageUri(item, type, title);
+    const isFavorited = favorites.some(fav => (fav.id || fav.trackId) === (item.id || item.trackId));
 
     return (
       <TouchableOpacity 
         key={item.id || item.trackId || Math.random()} 
-        style={styles.enhancedMediaCard}
+        style={[styles.enhancedMediaCard, { backgroundColor: themeColors.surface }]}
         onPress={handleItemPress}
         activeOpacity={0.8}
       >
         <View style={styles.cardImageContainer}>
           <Image
-            {...getImageProps(imageUri, 'Loading...')}
+            source={imageUri}
             style={styles.cardImage}
+            placeholder="https://via.placeholder.com/300x300/2a2a2a/ffffff?text=Loading"
+            contentFit="cover"
+            transition={300}
+            onError={(error) => {
+              console.log('Image load error for:', title, 'URI:', imageUri, 'Error:', error);
+            }}
+            onLoad={() => {
+              console.log('Image loaded successfully for:', title);
+            }}
           />
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
             <Text style={styles.statusText}>{status}</Text>
           </View>
           <TouchableOpacity 
-            style={styles.favoriteButton} 
+            style={[styles.favoriteButton, { 
+              backgroundColor: isFavorited ? themeColors.primary : 'rgba(0,0,0,0.6)' 
+            }]} 
             onPress={handleFavoritePress}
             activeOpacity={0.7}
           >
             <Ionicons 
-              name={favorites.some(fav => (fav.id || fav.trackId) === (item.id || item.trackId)) ? "heart" : "heart-outline"} 
+              name={isFavorited ? "heart" : "heart-outline"} 
               size={20} 
-              color={favorites.some(fav => (fav.id || fav.trackId) === (item.id || item.trackId)) ? "#FF6B6B" : "#fff"} 
+              color={isFavorited ? "#fff" : themeColors.textPrimary} 
             />
           </TouchableOpacity>
         </View>
-        <View style={styles.cardContent}>
-          <Text style={styles.cardTitle} numberOfLines={2}>
+        <View style={[styles.cardContent, { backgroundColor: themeColors.surface }]}>
+          <Text style={[styles.cardTitle, { color: themeColors.textPrimary }]} numberOfLines={2}>
             {title}
           </Text>
-          <Text style={styles.cardSubtitle} numberOfLines={2}>
+          <Text style={[styles.cardSubtitle, { color: themeColors.textSecondary }]} numberOfLines={2}>
             {subtitle}
           </Text>
           <View style={styles.cardFooter}>
             <View style={styles.ratingContainer}>
               {type === 'movie' && (
                 <>
-                  <Feather name="star" size={14} color={COLORS.gold} />
-                  <Text style={styles.ratingText}>{item.vote_average?.toFixed(1) || 'N/A'}</Text>
+                  <Feather name="star" size={14} color={themeColors.accent || '#FFD700'} />
+                  <Text style={[styles.ratingText, { color: themeColors.textSecondary }]}>{item.vote_average?.toFixed(1) || 'N/A'}</Text>
                 </>
               )}
               {type === 'music' && (
                 <>
-                  <Feather name="music" size={14} color={COLORS.primary} />
-                  <Text style={styles.ratingText}>{Math.floor((item.trackTimeMillis || 0) / 60000)}m</Text>
+                  <Feather name="music" size={14} color={themeColors.primary} />
+                  <Text style={[styles.ratingText, { color: themeColors.textSecondary }]}>{Math.floor((item.trackTimeMillis || 0) / 60000)}m</Text>
                 </>
               )}
               {type === 'podcast' && (
                 <>
-                  <Feather name="headphones" size={14} color={COLORS.accent} />
-                  <Text style={styles.ratingText}>{item.total_episodes || 0} eps</Text>
+                  <Feather name="headphones" size={14} color={themeColors.accent || '#FF6B6B'} />
+                  <Text style={[styles.ratingText, { color: themeColors.textSecondary }]}>{item.total_episodes || 0} eps</Text>
                 </>
               )}
             </View>
-            <TouchableOpacity style={styles.playButton}>
-              <Feather name="play" size={16} color={COLORS.textPrimary} />
+            <TouchableOpacity style={[styles.playButton, { backgroundColor: themeColors.primary }]}>
+              <Feather name="play" size={16} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -341,7 +505,7 @@ const HomeScreen = ({ navigation }) => {
                     onPress={handlePlayNow}
                     activeOpacity={0.8}
                   >
-                    <Feather name="play" size={20} color={COLORS.background} />
+                    <Feather name="play" size={20} color={themeColors.background} />
                     <Text style={styles.playNowText}>Play Now</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
@@ -423,10 +587,18 @@ const HomeScreen = ({ navigation }) => {
         </ScrollView>
       ) : (
         <View style={styles.emptySection}>
-          <Ionicons name="folder-open-outline" size={48} color="#666" />
-          <Text style={styles.emptySectionText}>No {title.toLowerCase()} available</Text>
-          <TouchableOpacity style={styles.refreshButton}>
-            <Text style={styles.refreshButtonText}>Refresh</Text>
+          <Ionicons name="folder-open-outline" size={48} color={themeColors.textSecondary} />
+          <Text style={[styles.emptySectionText, { color: themeColors.textSecondary }]}>No {title.toLowerCase()} available</Text>
+          <TouchableOpacity 
+            style={[styles.refreshButton, { backgroundColor: themeColors.primary }]}
+            onPress={() => {
+              setLoading(true);
+              loadTrendingContent();
+            }}
+            activeOpacity={0.8}
+          >
+            <Feather name="refresh-cw" size={16} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.refreshButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -457,7 +629,22 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={themeColors.primary}
+            colors={[themeColors.primary]}
+          />
+        }
+      >
+        {/* Centered Greeting at Top */}
+        <View style={styles.greetingTopContainer}>
+          <Text style={[styles.greetingTop, { color: themeColors.textSecondary }]}>{getTimeBasedGreeting()}</Text>
+        </View>
+
         {/* Header with User Info */}
         <View style={[styles.header, { backgroundColor: themeColors.background }]}>
           <TouchableOpacity
@@ -468,7 +655,6 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
           
           <View style={styles.headerCenter}>
-            <Text style={[styles.greeting, { color: themeColors.textSecondary }]}>{getTimeBasedGreeting()}</Text>
             <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>
               {user?.name || user?.username || 'StreamBox User'}
             </Text>
@@ -483,82 +669,7 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
             
             <ThemeToggle style={styles.themeToggle} size={20} />
-            
-            <TouchableOpacity
-              style={styles.userProfileButton}
-              onPress={() => setShowUserMenu(!showUserMenu)}
-            >
-              {user?.avatar ? (
-                <Image
-                  source={{ uri: user.avatar }}
-                  style={styles.userAvatar}
-                />
-              ) : (
-                <View style={[styles.userAvatarPlaceholder, { backgroundColor: themeColors.surfaceLight }]}>
-                  <Ionicons name="person" size={20} color={themeColors.primary} />
-                </View>
-              )}
-            </TouchableOpacity>
           </View>
-          
-          {/* User Menu Backdrop - Tap to close */}
-          {showUserMenu && (
-            <TouchableOpacity 
-              style={[styles.menuBackdrop, { backgroundColor: themeColors.overlay }]} 
-              activeOpacity={1}
-              onPress={() => setShowUserMenu(false)}
-            />
-          )}
-          
-          {/* User Menu Dropdown */}
-          {showUserMenu && (
-            <View style={[styles.userMenu, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-              <View style={styles.userMenuHeader}>
-                <View style={[styles.userMenuAvatar, { backgroundColor: themeColors.surfaceLight }]}>
-                  <Ionicons name="person" size={24} color={themeColors.primary} />
-                </View>
-                <View style={styles.userMenuInfo}>
-                  <Text style={[styles.userMenuName, { color: themeColors.textPrimary }]}>
-                    {user?.name || user?.username}
-                  </Text>
-                  <Text style={[styles.userMenuEmail, { color: themeColors.textSecondary }]}>{user?.email}</Text>
-                </View>
-              </View>
-              
-              <View style={[styles.userMenuDivider, { backgroundColor: themeColors.border }]} />
-              
-              <TouchableOpacity 
-                style={styles.userMenuItem}
-                onPress={() => {
-                  setShowUserMenu(false);
-                  navigation.navigate('Profile');
-                }}
-              >
-                <Ionicons name="person-outline" size={20} color={themeColors.textPrimary} />
-                <Text style={[styles.userMenuItemText, { color: themeColors.textPrimary }]}>Edit Profile</Text>
-                <Ionicons name="chevron-forward" size={16} color={themeColors.textTertiary} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.userMenuItem}
-                onPress={() => {
-                  setShowUserMenu(false);
-                  navigation.navigate('Settings');
-                }}
-              >
-                <Ionicons name="settings-outline" size={20} color={themeColors.textPrimary} />
-                <Text style={[styles.userMenuItemText, { color: themeColors.textPrimary }]}>Settings</Text>
-                <Ionicons name="chevron-forward" size={16} color={themeColors.textTertiary} />
-              </TouchableOpacity>
-              
-              <View style={[styles.userMenuDivider, { backgroundColor: themeColors.border }]} />
-              
-              <TouchableOpacity style={[styles.userMenuItem, styles.signOutMenuItem]} onPress={handleSignOut}>
-                <Ionicons name="log-out-outline" size={20} color={themeColors.error} />
-                <Text style={[styles.userMenuItemText, styles.signOutText, { color: themeColors.error }]}>Sign Out</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
 
         {/* Welcome Message */}
@@ -570,21 +681,14 @@ const HomeScreen = ({ navigation }) => {
         {renderFeaturedCard()}
 
         {/* Trending Sections */}
-        {renderSection('Trending Movies', trendingMovies, 'movie', 'film-outline')}
-        {renderSection('Popular Music', trendingMusic, 'music', 'musical-notes-outline')}
-        {renderSection('Top Podcasts', trendingPodcasts, 'podcast', 'radio-outline')}
+        {renderSection('Trending Movies', trendingMovies, 'movie', 'film')}
+        {renderSection('Popular Music', trendingMusic, 'music', 'music')}
+        {renderSection('Top Podcasts', trendingPodcasts, 'podcast', 'headphones')}
 
         <View style={styles.bottomPadding} />
       </ScrollView>
       
-      {/* Backdrop for closing menu */}
-      {showUserMenu && (
-        <TouchableOpacity
-          style={styles.menuBackdrop}
-          onPress={() => setShowUserMenu(false)}
-          activeOpacity={1}
-        />
-      )}
+
     </SafeAreaView>
   );
 };
@@ -662,112 +766,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
+  greetingTopContainer: {
+    alignItems: 'center',
+    paddingVertical: 15,
+    marginTop: 10,
+  },
+  greetingTop: {
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   headerTitle: {
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 5,
-    textAlign: 'center',
-  },
-  userProfileButton: {
-    marginLeft: 15,
-  },
-  userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#333',
-  },
-  userAvatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1a1a1a',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FF6B6B',
-  },
-  userMenu: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 15,
-    minWidth: 200,
-    ...createShadow({
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-    }),
-    zIndex: 1000,
-  },
-  userMenuHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: 12,
-    marginBottom: 8,
-  },
-  userMenuAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#2a2a2a',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: '#FF6B6B',
-  },
-  userMenuInfo: {
-    flex: 1,
-  },
-  userMenuName: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-  userMenuEmail: {
-    color: '#888',
-    fontSize: 13,
-  },
-  userMenuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 4,
-    borderRadius: 8,
-  },
-  userMenuItemText: {
-    color: '#fff',
-    fontSize: 15,
-    flex: 1,
-    marginLeft: 12,
-    fontWeight: '500',
-  },
-  userMenuDivider: {
-    height: 1,
-    backgroundColor: '#333',
-    marginVertical: 8,
-  },
-  signOutMenuItem: {
-    backgroundColor: 'rgba(255, 107, 107, 0.1)',
-  },
-  signOutText: {
-    color: '#FF6B6B',
-    fontWeight: '600',
-  },
-  menuBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 999,
+    textAlign: 'left',
   },
   welcomeContainer: {
     paddingHorizontal: 20,
@@ -842,27 +855,34 @@ const styles = StyleSheet.create({
   },
   // Enhanced Card Styles
   enhancedMediaCard: {
-    width: 160,
-    marginRight: 15,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
+    width: 170,
+    marginRight: 16,
+    borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   cardImageContainer: {
     position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: 200,
+    height: 220,
     backgroundColor: '#333',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   statusBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    paddingHorizontal: 8,
+    top: 10,
+    left: 10,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     minWidth: 50,
@@ -876,27 +896,33 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 15,
-    padding: 6,
+    top: 10,
+    right: 10,
+    borderRadius: 18,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   cardContent: {
-    padding: 12,
+    padding: 16,
   },
   cardTitle: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-    lineHeight: 18,
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 6,
+    lineHeight: 20,
   },
   cardSubtitle: {
-    color: '#888',
-    fontSize: 12,
-    marginBottom: 8,
-    lineHeight: 16,
+    fontSize: 13,
+    marginBottom: 12,
+    lineHeight: 18,
+    opacity: 0.8,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -1052,14 +1078,25 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   refreshButton: {
-    backgroundColor: '#FF6B6B',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   refreshButtonText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: 15,
   },
 
   // Legacy styles (keeping for compatibility)

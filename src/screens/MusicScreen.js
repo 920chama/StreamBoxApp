@@ -12,14 +12,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { addToFavorites, removeFromFavorites } from '../store/slices/mediaSlice';
 
 import { musicApi } from '../services/musicApi';
 import { useTheme } from '../contexts/ThemeContext';
-import { getThemeColors } from '../styles/globalStyles';
+import { getThemeColors, getResponsivePadding, SCREEN_SIZES } from '../styles/globalStyles';
 
 const MusicScreen = ({ navigation }) => {
   const { isDarkMode } = useTheme();
   const themeColors = getThemeColors(isDarkMode);
+  const dispatch = useDispatch();
+  const favorites = useSelector(state => state.media.favorites);
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,6 +33,27 @@ const MusicScreen = ({ navigation }) => {
   useEffect(() => {
     loadTrendingTracks();
   }, []);
+
+  const isTrackFavorite = (track) => {
+    return favorites.some(fav => fav.type === 'music' && fav.trackId === track.trackId);
+  };
+
+  const toggleFavorite = (track) => {
+    const favoriteData = {
+      ...track,
+      type: 'music',
+      id: track.trackId,
+      title: track.trackName,
+      artist: track.artistName,
+      image: track.artworkUrl100
+    };
+
+    if (isTrackFavorite(track)) {
+      dispatch(removeFromFavorites({ type: 'music', id: track.trackId }));
+    } else {
+      dispatch(addToFavorites(favoriteData));
+    }
+  };
 
   const loadTrendingTracks = async () => {
     try {
@@ -73,9 +98,9 @@ const MusicScreen = ({ navigation }) => {
   };
 
   const renderTrackCard = (item, index) => (
-    <TouchableOpacity key={item.trackId || index} style={styles.trackCard}>
+    <TouchableOpacity key={item.trackId || index} style={[styles.trackCard, { backgroundColor: themeColors.surface }]}>
       <View style={styles.trackNumber}>
-        <Text style={styles.trackNumberText}>{index + 1}</Text>
+        <Text style={[styles.trackNumberText, { color: themeColors.textSecondary }]}>{index + 1}</Text>
       </View>
       
       <Image
@@ -86,24 +111,36 @@ const MusicScreen = ({ navigation }) => {
       />
       
       <View style={styles.trackInfo}>
-        <Text style={styles.trackTitle} numberOfLines={1}>
+        <Text style={[styles.trackTitle, { color: themeColors.textPrimary }]} numberOfLines={1}>
           {item.trackName}
         </Text>
-        <Text style={styles.artistName} numberOfLines={1}>
+        <Text style={[styles.artistName, { color: themeColors.textSecondary }]} numberOfLines={1}>
           {item.artistName}
         </Text>
-        <Text style={styles.albumName} numberOfLines={1}>
+        <Text style={[styles.albumName, { color: themeColors.textTertiary }]} numberOfLines={1}>
           {item.collectionName}
         </Text>
       </View>
       
       <View style={styles.trackMeta}>
-        <Text style={styles.duration}>
+        <Text style={[styles.duration, { color: themeColors.textSecondary }]}>
           {formatDuration(item.trackTimeMillis)}
         </Text>
-        <TouchableOpacity style={styles.moreButton}>
-          <Ionicons name="ellipsis-horizontal" size={20} color="#888" />
-        </TouchableOpacity>
+        <View style={styles.trackActions}>
+          <TouchableOpacity 
+            style={styles.favoriteButton}
+            onPress={() => toggleFavorite(item)}
+          >
+            <Ionicons 
+              name={isTrackFavorite(item) ? "heart" : "heart-outline"} 
+              size={20} 
+              color={isTrackFavorite(item) ? "#FF6B6B" : themeColors.textSecondary} 
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.moreButton}>
+            <Ionicons name="ellipsis-horizontal" size={20} color={themeColors.textSecondary} />
+          </TouchableOpacity>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -117,7 +154,7 @@ const MusicScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.searchContainer, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.searchContainer, { backgroundColor: themeColors.background, paddingHorizontal: getResponsivePadding() }]}>
         <View style={[styles.searchInputContainer, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
           <Ionicons name="search" size={20} color={themeColors.textTertiary} />
           <TextInput
@@ -161,13 +198,13 @@ const MusicScreen = ({ navigation }) => {
         </View>
       ) : (
         <ScrollView
-          style={styles.tracksList}
+          style={[styles.tracksList, { paddingHorizontal: getResponsivePadding() }]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#FF6B6B"
+              tintColor={themeColors.primary}
             />
           }
         >

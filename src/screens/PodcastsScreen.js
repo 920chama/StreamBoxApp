@@ -12,14 +12,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { addToFavorites, removeFromFavorites } from '../store/slices/mediaSlice';
 
 import { podcastsApi } from '../services/podcastsApi';
 import { useTheme } from '../contexts/ThemeContext';
-import { getThemeColors } from '../styles/globalStyles';
+import { getThemeColors, getResponsivePadding, SCREEN_SIZES } from '../styles/globalStyles';
 
 const PodcastsScreen = ({ navigation }) => {
   const { isDarkMode } = useTheme();
   const themeColors = getThemeColors(isDarkMode);
+  const dispatch = useDispatch();
+  const favorites = useSelector(state => state.media.favorites);
   const [podcasts, setPodcasts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,6 +33,26 @@ const PodcastsScreen = ({ navigation }) => {
   useEffect(() => {
     loadTrendingPodcasts();
   }, []);
+
+  const isPodcastFavorite = (podcast) => {
+    return favorites.some(fav => fav.type === 'podcast' && fav.id === podcast.id);
+  };
+
+  const toggleFavorite = (podcast) => {
+    const favoriteData = {
+      ...podcast,
+      type: 'podcast',
+      title: podcast.title,
+      artist: podcast.publisher,
+      image: podcast.image
+    };
+
+    if (isPodcastFavorite(podcast)) {
+      dispatch(removeFromFavorites({ type: 'podcast', id: podcast.id }));
+    } else {
+      dispatch(addToFavorites(favoriteData));
+    }
+  };
 
   const loadTrendingPodcasts = async () => {
     try {
@@ -79,7 +103,7 @@ const PodcastsScreen = ({ navigation }) => {
   };
 
   const renderPodcastCard = (item) => (
-    <TouchableOpacity key={item.id} style={styles.podcastCard}>
+    <TouchableOpacity key={item.id} style={[styles.podcastCard, { backgroundColor: themeColors.surface }]}>
       <Image
         source={{ uri: item.image }}
         style={styles.podcastImage}
@@ -88,31 +112,42 @@ const PodcastsScreen = ({ navigation }) => {
       />
       
       <View style={styles.podcastInfo}>
-        <Text style={styles.podcastTitle} numberOfLines={2}>
+        <Text style={[styles.podcastTitle, { color: themeColors.textPrimary }]} numberOfLines={2}>
           {item.title}
         </Text>
-        <Text style={styles.publisher} numberOfLines={1}>
+        <Text style={[styles.publisher, { color: themeColors.textSecondary }]} numberOfLines={1}>
           {item.publisher}
         </Text>
-        <Text style={styles.description} numberOfLines={3}>
+        <Text style={[styles.description, { color: themeColors.textTertiary }]} numberOfLines={3}>
           {item.description}
         </Text>
         
         <View style={styles.podcastMeta}>
           <View style={styles.episodeInfo}>
-            <Ionicons name="play-circle" size={16} color="#888" />
-            <Text style={styles.episodeCount}>
+            <Ionicons name="play-circle" size={16} color={themeColors.textSecondary} />
+            <Text style={[styles.episodeCount, { color: themeColors.textSecondary }]}>
               {formatEpisodeCount(item.total_episodes)} episodes
             </Text>
           </View>
-          <View 
-            style={[
-              styles.genreBadge, 
-              { backgroundColor: getGenreColor(item.genre_ids) }
-            ]}
+          <TouchableOpacity 
+            style={styles.podcastFavoriteButton}
+            onPress={() => toggleFavorite(item)}
           >
-            <Text style={styles.genreText}>{item.language}</Text>
-          </View>
+            <Ionicons 
+              name={isPodcastFavorite(item) ? "heart" : "heart-outline"} 
+              size={20} 
+              color={isPodcastFavorite(item) ? "#FF6B6B" : themeColors.textSecondary} 
+            />
+          </TouchableOpacity>
+        </View>
+        
+        <View 
+          style={[
+            styles.genreBadge, 
+            { backgroundColor: getGenreColor(item.genre_ids) }
+          ]}
+        >
+          <Text style={styles.genreText}>{item.language}</Text>
         </View>
       </View>
 
@@ -407,6 +442,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+    flex: 1,
+  },
+  podcastFavoriteButton: {
+    padding: 5,
+    marginLeft: 10,
   },
   episodeCount: {
     color: '#888',

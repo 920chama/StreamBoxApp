@@ -165,13 +165,16 @@ const CustomDrawerContent = (props) => {
 
 // Home Stack Navigator (includes search functionality)
 const HomeStackNavigator = () => {
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: themeColors.surface,
         },
-        headerTintColor: '#fff',
+        headerTintColor: themeColors.textPrimary,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
@@ -198,13 +201,16 @@ const HomeStackNavigator = () => {
 
 // Movies Stack Navigator
 const MoviesStackNavigator = () => {
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: themeColors.surface,
         },
-        headerTintColor: '#fff',
+        headerTintColor: themeColors.textPrimary,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
@@ -231,13 +237,16 @@ const MoviesStackNavigator = () => {
 
 // Music Stack Navigator
 const MusicStackNavigator = () => {
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: themeColors.surface,
         },
-        headerTintColor: '#fff',
+        headerTintColor: themeColors.textPrimary,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
@@ -264,13 +273,16 @@ const MusicStackNavigator = () => {
 
 // Podcasts Stack Navigator
 const PodcastsStackNavigator = () => {
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: themeColors.surface,
         },
-        headerTintColor: '#fff',
+        headerTintColor: themeColors.textPrimary,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
@@ -297,13 +309,16 @@ const PodcastsStackNavigator = () => {
 
 // Favorites Stack Navigator
 const FavoritesStackNavigator = () => {
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: themeColors.surface,
         },
-        headerTintColor: '#fff',
+        headerTintColor: themeColors.textPrimary,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
@@ -436,11 +451,14 @@ const MainDrawerNavigator = () => {
 
 // Authentication stack (unauthenticated users)
 const AuthStackNavigator = () => {
+  const { isDarkMode } = useTheme();
+  const themeColors = getThemeColors(isDarkMode);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#0a0a0a' },
+        cardStyle: { backgroundColor: themeColors.background },
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />

@@ -6,7 +6,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Sample movie data for demo (since TMDB requires API key)
+// Enhanced sample movie data for demo with better images
 const sampleMovies = [
   {
     id: 1,
@@ -27,6 +27,36 @@ const sampleMovies = [
     release_date: "2022-11-09",
     vote_average: 7.3,
     genre_ids: [28, 12, 18]
+  },
+  {
+    id: 3,
+    title: "Top Gun: Maverick",
+    overview: "After thirty years, Maverick is still pushing the envelope as a top naval aviator.",
+    poster_path: "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
+    backdrop_path: "https://image.tmdb.org/t/p/w500/odJ4hx6g6vBt4lBWKFD1tI8WS4x.jpg",
+    release_date: "2022-05-24",
+    vote_average: 8.3,
+    genre_ids: [28, 18]
+  },
+  {
+    id: 4,
+    title: "Spider-Man: No Way Home",
+    overview: "Peter Parker's secret identity is revealed to the entire world.",
+    poster_path: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+    backdrop_path: "https://image.tmdb.org/t/p/w500/14QbnygCuTO0vl7CAFmPf1fgZfV.jpg",
+    release_date: "2021-12-15",
+    vote_average: 8.4,
+    genre_ids: [28, 12, 878]
+  },
+  {
+    id: 5,
+    title: "The Batman",
+    overview: "When a killer targets Gotham's elite, Batman must uncover the city's darkest secrets.",
+    poster_path: "https://image.tmdb.org/t/p/w500/b0PlSFdDwbyK0cf5RxwDpaOJQvQ.jpg",
+    backdrop_path: "https://image.tmdb.org/t/p/w500/ym1dxyOk4jFcSl4Q2zmRrA5BEEN.jpg",
+    release_date: "2022-03-01",
+    vote_average: 7.8,
+    genre_ids: [80, 18, 53]
   },
   {
     id: 3,
@@ -73,55 +103,54 @@ const sampleMovies = [
 export const moviesApi = {
   getTrendingMovies: async () => {
     try {
-      // For demo purposes, return sample data
-      // In production, uncomment the line below and use your TMDB API key
-      // const response = await api.get(`${API_CONFIG.TMDB_BASE_URL}/trending/movie/week?api_key=${API_CONFIG.TMDB_API_KEY}`);
-      
-      // Simulate API delay
+      // Use real TMDB API
+      const response = await axios.get(`${API_CONFIG.TMDB_BASE_URL}/trending/movie/week?api_key=${API_CONFIG.TMDB_API_KEY}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching trending movies:', error);
+      // Fallback to sample data if API fails
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
       return {
         data: {
           results: sampleMovies
         }
       };
-    } catch (error) {
-      console.error('Error fetching trending movies:', error);
-      throw error;
     }
   },
 
   getPopularMovies: async () => {
     try {
-      // Return shuffled sample data for variety
+      // Use real TMDB API
+      const response = await axios.get(`${API_CONFIG.TMDB_BASE_URL}/movie/popular?api_key=${API_CONFIG.TMDB_API_KEY}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching popular movies:', error);
+      // Fallback to sample data if API fails
       const shuffled = [...sampleMovies].sort(() => 0.5 - Math.random());
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
       return {
         data: {
           results: shuffled
         }
       };
-    } catch (error) {
-      console.error('Error fetching popular movies:', error);
-      throw error;
     }
   },
 
   getTopRatedMovies: async () => {
     try {
-      // Return sorted by rating
+      // Use real TMDB API
+      const response = await axios.get(`${API_CONFIG.TMDB_BASE_URL}/movie/top_rated?api_key=${API_CONFIG.TMDB_API_KEY}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching top rated movies:', error);
+      // Fallback to sample data if API fails
       const sorted = [...sampleMovies].sort((a, b) => b.vote_average - a.vote_average);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
       return {
         data: {
           results: sorted
         }
       };
-    } catch (error) {
-      console.error('Error fetching top rated movies:', error);
-      throw error;
     }
   }
 };

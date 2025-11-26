@@ -1,40 +1,46 @@
 import axios from 'axios';
 import { API_CONFIG } from '../constants/api';
 
-// Sample podcast data for demo
+// Enhanced sample podcast data for demo with better images
 const samplePodcasts = [
   {
     id: 1,
     title: "The Joe Rogan Experience",
-    description: "The official podcast of comedian Joe Rogan.",
-    image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/9b/6b/95/9b6b95b8-b9c7-3c91-8b1c-cb5e2ae42c10/mza_9583267189253983140.jpg/200x200bb.jpg",
+    description: "The official podcast of comedian Joe Rogan featuring conversations with fascinating guests.",
+    image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/9b/6b/95/9b6b95b8-b9c7-3c91-8b1c-cb5e2ae42c10/mza_9583267189253983140.jpg/300x300bb.jpg",
+    thumbnail: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/9b/6b/95/9b6b95b8-b9c7-3c91-8b1c-cb5e2ae42c10/mza_9583267189253983140.jpg/300x300bb.jpg",
     publisher: "Joe Rogan",
     language: "English",
     genre_ids: [67, 68],
     total_episodes: 2000,
-    latest_episode_publish_time_ms: Date.now()
+    latest_episode_publish_time_ms: Date.now(),
+    explicit: false
   },
   {
     id: 2,
     title: "Crime Junkie",
     description: "If you can never get enough true crime... Congratulations, you've found your people.",
-    image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/8e/4a/c6/8e4ac6a8-7c5a-3e2f-1abc-80dd5438b83e/mza_3157052564897388092.jpg/200x200bb.jpg",
+    image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/8e/4a/c6/8e4ac6a8-7c5a-3e2f-1abc-80dd5438b83e/mza_3157052564897388092.jpg/300x300bb.jpg",
+    thumbnail: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/8e/4a/c6/8e4ac6a8-7c5a-3e2f-1abc-80dd5438b83e/mza_3157052564897388092.jpg/300x300bb.jpg",
     publisher: "audiochuck",
     language: "English", 
     genre_ids: [68],
     total_episodes: 400,
-    latest_episode_publish_time_ms: Date.now()
+    latest_episode_publish_time_ms: Date.now(),
+    explicit: false
   },
   {
     id: 3,
     title: "Call Her Daddy",
     description: "Alex Cooper brings you candid conversations with personalities you've never heard before.",
-    image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/c3/93/8e/c3938e54-d83c-2f95-0a06-4a9d0a8e8e8e/mza_1234567890123456789.jpg/200x200bb.jpg",
+    image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/bd/3e/8d/bd3e8d7e-0e6f-3828-b8e6-b9c4f2c5d3e4/mza_1234567890123456789.jpg/300x300bb.jpg",
+    thumbnail: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/bd/3e/8d/bd3e8d7e-0e6f-3828-b8e6-b9c4f2c5d3e4/mza_1234567890123456789.jpg/300x300bb.jpg",
     publisher: "Spotify Studios",
     language: "English",
     genre_ids: [67, 133],
     total_episodes: 300,
-    latest_episode_publish_time_ms: Date.now()
+    latest_episode_publish_time_ms: Date.now(),
+    explicit: true
   },
   {
     id: 4,
@@ -74,14 +80,31 @@ const samplePodcasts = [
 export const podcastsApi = {
   getTrendingPodcasts: async () => {
     try {
-      // For demo purposes, return sample data
-      // In production, you could use Listen Notes API:
-      // const response = await axios.get(`${API_CONFIG.LISTEN_NOTES_BASE_URL}/best_podcasts`, {
-      //   headers: { 'X-ListenAPI-Key': API_CONFIG.LISTEN_NOTES_API_KEY }
-      // });
+      // Try using iTunes Search API for podcasts (free alternative)
+      const response = await axios.get(`${API_CONFIG.ITUNES_BASE_URL}?term=popular&media=podcast&limit=50&country=US`);
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (response.data && response.data.results && response.data.results.length > 0) {
+        // Transform iTunes podcast data to match our format
+        const transformedPodcasts = response.data.results.map(podcast => ({
+          id: podcast.collectionId,
+          title: podcast.collectionName,
+          description: podcast.description || 'No description available',
+          image: podcast.artworkUrl600 || podcast.artworkUrl100,
+          publisher: podcast.artistName,
+          language: 'English',
+          genre_ids: [67], // Default to general category
+          total_episodes: podcast.trackCount || 0,
+          latest_episode_publish_time_ms: new Date(podcast.releaseDate).getTime()
+        }));
+        
+        return {
+          data: {
+            podcasts: transformedPodcasts
+          }
+        };
+      }
       
+      // Fallback to sample data if iTunes doesn't return podcasts
       return {
         data: {
           podcasts: samplePodcasts
@@ -89,7 +112,13 @@ export const podcastsApi = {
       };
     } catch (error) {
       console.error('Error fetching trending podcasts:', error);
-      throw error;
+      // Fallback to sample data if API fails
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return {
+        data: {
+          podcasts: samplePodcasts
+        }
+      };
     }
   },
 
@@ -117,10 +146,32 @@ export const podcastsApi = {
 
   getPopularPodcasts: async () => {
     try {
-      // Return shuffled sample data
-      const shuffled = [...samplePodcasts].sort(() => 0.5 - Math.random());
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Try using iTunes Search API for popular podcasts
+      const response = await axios.get(`${API_CONFIG.ITUNES_BASE_URL}?term=top&media=podcast&limit=50&country=US`);
       
+      if (response.data && response.data.results && response.data.results.length > 0) {
+        // Transform iTunes podcast data to match our format
+        const transformedPodcasts = response.data.results.map(podcast => ({
+          id: podcast.collectionId,
+          title: podcast.collectionName,
+          description: podcast.description || 'No description available',
+          image: podcast.artworkUrl600 || podcast.artworkUrl100,
+          publisher: podcast.artistName,
+          language: 'English',
+          genre_ids: [67], // Default to general category
+          total_episodes: podcast.trackCount || 0,
+          latest_episode_publish_time_ms: new Date(podcast.releaseDate).getTime()
+        }));
+        
+        return {
+          data: {
+            podcasts: transformedPodcasts
+          }
+        };
+      }
+      
+      // Fallback to sample data
+      const shuffled = [...samplePodcasts].sort(() => 0.5 - Math.random());
       return {
         data: {
           podcasts: shuffled
@@ -128,7 +179,14 @@ export const podcastsApi = {
       };
     } catch (error) {
       console.error('Error fetching popular podcasts:', error);
-      throw error;
+      // Fallback to sample data if API fails
+      const shuffled = [...samplePodcasts].sort(() => 0.5 - Math.random());
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return {
+        data: {
+          podcasts: shuffled
+        }
+      };
     }
   }
 };

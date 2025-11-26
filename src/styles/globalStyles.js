@@ -2,6 +2,32 @@ import { Dimensions, Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
+// Screen Size Detection
+export const SCREEN_SIZES = {
+  isSmallDevice: width < 380,
+  isMediumDevice: width >= 380 && width < 768,
+  isLargeDevice: width >= 768 && width < 1024,
+  isExtraLarge: width >= 1024,
+  isTablet: width >= 768,
+  isPhone: width < 768,
+};
+
+// Responsive Grid Columns
+export const getGridColumns = () => {
+  if (SCREEN_SIZES.isSmallDevice) return 1;
+  if (SCREEN_SIZES.isMediumDevice) return 2;
+  if (SCREEN_SIZES.isLargeDevice) return 3;
+  return 4; // Extra large devices
+};
+
+// Dynamic spacing based on screen size
+export const getResponsivePadding = () => {
+  if (SCREEN_SIZES.isSmallDevice) return 12;
+  if (SCREEN_SIZES.isMediumDevice) return 16;
+  if (SCREEN_SIZES.isLargeDevice) return 20;
+  return 24; // Extra large devices
+};
+
 // Theme Colors
 export const THEME_COLORS = {
   dark: {
@@ -182,8 +208,8 @@ export const LAYOUT = {
   tabBarHeight: Platform.OS === 'ios' ? 83 : 60,
   statusBarHeight: Platform.OS === 'ios' ? 44 : 24,
   
-  // Content Padding
-  contentPadding: SPACING.lg,
+  // Responsive Content Padding
+  contentPadding: getResponsivePadding(),
   sectionPadding: SPACING['2xl'],
   
   // Card Dimensions
@@ -191,17 +217,25 @@ export const LAYOUT = {
   imageAspectRatio: 16 / 9,
   posterAspectRatio: 2 / 3,
   
-  // Grid
-  gridGutter: SPACING.md,
-  gridColumns: 2,
+  // Responsive Grid
+  gridGutter: SCREEN_SIZES.isSmallDevice ? SPACING.sm : SPACING.md,
+  gridColumns: getGridColumns(),
   
   // Breakpoints (for responsive design)
   breakpoints: {
+    xs: 320,
     sm: 380,
     md: 768,
     lg: 1024,
     xl: 1280,
+    xxl: 1440,
   },
+  
+  // Responsive Item Dimensions
+  movieCardWidth: SCREEN_SIZES.isSmallDevice ? width - 40 : 
+                  SCREEN_SIZES.isMediumDevice ? (width - 60) / 2 : 
+                  SCREEN_SIZES.isLargeDevice ? (width - 80) / 3 : 
+                  (width - 100) / 4,
 };
 
 // Common Style Components
@@ -394,8 +428,38 @@ export const getResponsiveSpacing = (baseSpacing, scale = 1) => {
 export const getGridItemWidth = (columns = 2, spacing = SPACING.md) => {
   const { screenWidth } = LAYOUT;
   const totalSpacing = spacing * (columns + 1);
-  const availableWidth = screenWidth - (LAYOUT.contentPadding * 2) - totalSpacing;
+  const availableWidth = screenWidth - (getResponsivePadding() * 2) - totalSpacing;
   return availableWidth / columns;
+};
+
+// Get responsive card dimensions for different content types
+export const getCardDimensions = (type = 'movie') => {
+  const columns = getGridColumns();
+  const spacing = LAYOUT.gridGutter;
+  const width = getGridItemWidth(columns, spacing);
+  
+  switch (type) {
+    case 'movie':
+      return {
+        width: width,
+        height: width * 1.6, // Movie poster aspect ratio
+        columns: columns
+      };
+    case 'music':
+      return {
+        width: width,
+        height: SCREEN_SIZES.isSmallDevice ? 80 : 100,
+        columns: 1 // Music tracks are always single column lists
+      };
+    case 'podcast':
+      return {
+        width: width,
+        height: width * 0.8,
+        columns: columns
+      };
+    default:
+      return { width, height: width, columns };
+  }
 };
 
 // For backward compatibility with existing code
@@ -423,7 +487,11 @@ export default {
   LAYOUT,
   COMMON_STYLES,
   FONT_SIZES,
+  SCREEN_SIZES,
   getResponsiveFontSize,
   getResponsiveSpacing,
+  getResponsivePadding,
+  getGridColumns,
   getGridItemWidth,
+  getCardDimensions,
 };

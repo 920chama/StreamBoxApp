@@ -12,14 +12,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { FlatGrid } from 'react-native-super-grid';
+import { useSelector, useDispatch } from 'react-redux';
+import { addToFavorites, removeFromFavorites } from '../store/slices/mediaSlice';
 
 import { moviesApi } from '../services/moviesApi';
+import { API_CONFIG } from '../constants/api';
 import { useTheme } from '../contexts/ThemeContext';
-import { getThemeColors } from '../styles/globalStyles';
+import { getThemeColors, getCardDimensions, getResponsivePadding, SCREEN_SIZES } from '../styles/globalStyles';
 
 const MoviesScreen = ({ navigation }) => {
   const { isDarkMode } = useTheme();
   const themeColors = getThemeColors(isDarkMode);
+  const dispatch = useDispatch();
+  const favorites = useSelector(state => state.media.favorites);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,6 +39,26 @@ const MoviesScreen = ({ navigation }) => {
   useEffect(() => {
     loadMovies();
   }, [selectedCategory]);
+
+  const isMovieFavorite = (movie) => {
+    return favorites.some(fav => fav.type === 'movie' && fav.id === movie.id);
+  };
+
+  const toggleFavorite = (movie) => {
+    const favoriteData = {
+      ...movie,
+      type: 'movie',
+      title: movie.title,
+      artist: new Date(movie.release_date).getFullYear().toString(),
+      image: `${API_CONFIG.TMDB_IMAGE_BASE_URL}${movie.poster_path}`
+    };
+
+    if (isMovieFavorite(movie)) {
+      dispatch(removeFromFavorites({ type: 'movie', id: movie.id }));
+    } else {
+      dispatch(addToFavorites(favoriteData));
+    }
+  };
 
   const loadMovies = async () => {
     try {
@@ -66,33 +91,41 @@ const MoviesScreen = ({ navigation }) => {
   };
 
   const renderMovieCard = ({ item }) => (
-    <TouchableOpacity style={styles.movieCard}>
+    <TouchableOpacity style={[styles.movieCard, { backgroundColor: themeColors.surface }]}>
       <Image
-        source={{ uri: item.poster_path }}
+        source={{ uri: `${API_CONFIG.TMDB_IMAGE_BASE_URL}${item.poster_path}` }}
         style={styles.moviePoster}
         placeholder="Loading..."
         transition={200}
+        contentFit="cover"
       />
       <View style={styles.movieInfo}>
-        <Text style={styles.movieTitle} numberOfLines={2}>
+        <Text style={[styles.movieTitle, { color: themeColors.textPrimary }]} numberOfLines={2}>
           {item.title}
         </Text>
         <View style={styles.movieMeta}>
           <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={16} color="#FFD700" />
+            <Ionicons name="star" size={14} color="#FFD700" />
             <Text style={styles.rating}>{item.vote_average.toFixed(1)}</Text>
           </View>
-          <Text style={styles.releaseDate}>
+          <Text style={[styles.releaseDate, { color: themeColors.textSecondary }]}>
             {new Date(item.release_date).getFullYear()}
           </Text>
         </View>
-        <Text style={styles.movieOverview} numberOfLines={3}>
+        <Text style={[styles.movieOverview, { color: themeColors.textSecondary }]} numberOfLines={2}>
           {item.overview}
         </Text>
       </View>
-      <TouchableOpacity style={styles.favoriteButton}>
-        <Ionicons name="heart-outline" size={24} color="#fff" />
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(item)}
+        >
+          <Ionicons 
+            name={isMovieFavorite(item) ? "heart" : "heart-outline"} 
+            size={20} 
+            color={isMovieFavorite(item) ? "#FF6B6B" : "#fff"} 
+          />
+        </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -144,21 +177,25 @@ const MoviesScreen = ({ navigation }) => {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B6B" />
-          <Text style={styles.loadingText}>Loading movies...</Text>
+          <ActivityIndicator size="large" color={themeColors.primary} />
+          <Text style={[styles.loadingText, { color: themeColors.textPrimary }]}>Loading movies...</Text>
         </View>
       ) : (
         <FlatGrid
-          itemDimension={160}
+          itemDimension={getCardDimensions('movie').width}
           data={movies}
-          style={styles.moviesList}
-          spacing={15}
+          style={[styles.moviesList, { paddingHorizontal: getResponsivePadding() }]}
+          spacing={SCREEN_SIZES.isSmallDevice ? 12 : 15}
+          staticDimension={undefined}
+          fixed={false}
+          maxItemsPerRow={getCardDimensions('movie').columns}
+          additionalRowStyle={styles.gridRow}
           renderItem={renderMovieCard}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#FF6B6B"
+              tintColor={themeColors.primary}
             />
           }
         />
@@ -215,34 +252,48 @@ const styles = StyleSheet.create({
   },
   moviesList: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+  },
+  gridRow: {
+    justifyContent: 'center',
   },
   movieCard: {
-    backgroundColor: '#1a1a1a',
+    flex: 1,
+    minHeight: 340,
     borderRadius: 15,
     overflow: 'hidden',
     position: 'relative',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    marginBottom: 15,
   },
   moviePoster: {
     width: '100%',
-    height: 240,
+    flex: 1,
     backgroundColor: '#333',
   },
   movieInfo: {
-    padding: 15,
+    padding: 12,
+    minHeight: 100,
+    justifyContent: 'space-between',
   },
   movieTitle: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 8,
-    lineHeight: 22,
+    marginBottom: 6,
+    lineHeight: 18,
+    height: 36,
   },
   movieMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
+    height: 20,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -255,20 +306,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   releaseDate: {
-    color: '#888',
-    fontSize: 14,
+    fontSize: 13,
   },
   movieOverview: {
-    color: '#ccc',
     fontSize: 12,
     lineHeight: 16,
+    flex: 1,
   },
   favoriteButton: {
     position: 'absolute',
     top: 10,
     right: 10,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 20,
+    borderRadius: 18,
     padding: 8,
   },
   loadingContainer: {
@@ -277,7 +327,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#fff',
     marginTop: 10,
     fontSize: 16,
   },

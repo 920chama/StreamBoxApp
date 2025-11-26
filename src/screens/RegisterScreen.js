@@ -98,12 +98,12 @@ const RegisterScreen = ({ navigation }) => {
           <View style={styles.formContainer}>
             {/* Full Name Input */}
             <View style={styles.inputContainer}>
-              <View style={[styles.inputWrapper, getFieldError('name') && styles.inputError]}>
-                <Feather name="user" size={20} color={COLORS.textMuted} />
+              <View style={[styles.inputWrapper, { backgroundColor: themeColors.surface }, getFieldError('name') && [styles.inputError, { borderColor: themeColors.error }]]}>
+                <Feather name="user" size={20} color={themeColors.textSecondary} />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: themeColors.textPrimary }]}
                   placeholder="Full Name"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={themeColors.textSecondary}
                   value={values.name}
                   onChangeText={(text) => handleChange('name', text)}
                   onBlur={() => handleBlur('name')}
@@ -111,18 +111,18 @@ const RegisterScreen = ({ navigation }) => {
                 />
               </View>
               {getFieldError('name') && (
-                <Text style={styles.errorText}>{getFieldError('name')}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{getFieldError('name')}</Text>
               )}
             </View>
 
             {/* Username Input */}
             <View style={styles.inputContainer}>
-              <View style={[styles.inputWrapper, getFieldError('username') && styles.inputError]}>
-                <Feather name="at-sign" size={20} color={COLORS.textMuted} />
+              <View style={[styles.inputWrapper, { backgroundColor: themeColors.surface }, getFieldError('username') && [styles.inputError, { borderColor: themeColors.error }]]}>
+                <Feather name="at-sign" size={20} color={themeColors.textSecondary} />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: themeColors.textPrimary }]}
                   placeholder="Username"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={themeColors.textSecondary}
                   value={values.username}
                   onChangeText={(text) => handleChange('username', text)}
                   onBlur={() => handleBlur('username')}
@@ -131,18 +131,18 @@ const RegisterScreen = ({ navigation }) => {
                 />
               </View>
               {getFieldError('username') && (
-                <Text style={styles.errorText}>{getFieldError('username')}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{getFieldError('username')}</Text>
               )}
             </View>
 
             {/* Email Input */}
             <View style={styles.inputContainer}>
-              <View style={[styles.inputWrapper, getFieldError('email') && styles.inputError]}>
-                <Feather name="mail" size={20} color={COLORS.textMuted} />
+              <View style={[styles.inputWrapper, { backgroundColor: themeColors.surface }, getFieldError('email') && [styles.inputError, { borderColor: themeColors.error }]]}>
+                <Feather name="mail" size={20} color={themeColors.textSecondary} />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: themeColors.textPrimary }]}
                   placeholder="Email address"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={themeColors.textSecondary}
                   value={values.email}
                   onChangeText={(text) => handleChange('email', text)}
                   onBlur={() => handleBlur('email')}
@@ -152,18 +152,18 @@ const RegisterScreen = ({ navigation }) => {
                 />
               </View>
               {getFieldError('email') && (
-                <Text style={styles.errorText}>{getFieldError('email')}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{getFieldError('email')}</Text>
               )}
             </View>
 
             {/* Password Input */}
             <View style={styles.inputContainer}>
-              <View style={[styles.inputWrapper, getFieldError('password') && styles.inputError]}>
-                <Ionicons name="lock-closed-outline" size={20} color={COLORS.textMuted} />
+              <View style={[styles.inputWrapper, { backgroundColor: themeColors.surface }, getFieldError('password') && [styles.inputError, { borderColor: themeColors.error }]]}>
+                <Ionicons name="lock-closed-outline" size={20} color={themeColors.textSecondary} />
                 <TextInput
-                  style={[styles.input, styles.passwordInput]}
+                  style={[styles.input, styles.passwordInput, { color: themeColors.textPrimary }]}
                   placeholder="Password"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={themeColors.textSecondary}
                   value={values.password}
                   onChangeText={(text) => handleChange('password', text)}
                   onBlur={() => handleBlur('password')}
@@ -177,23 +177,23 @@ const RegisterScreen = ({ navigation }) => {
                   <Ionicons
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
-                    color={COLORS.textMuted}
+                    color={themeColors.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
               {getFieldError('password') && (
-                <Text style={styles.errorText}>{getFieldError('password')}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{getFieldError('password')}</Text>
               )}
             </View>
 
             {/* Confirm Password Input */}
             <View style={styles.inputContainer}>
-              <View style={[styles.inputWrapper, getFieldError('confirmPassword') && styles.inputError]}>
-                <Feather name="lock" size={20} color={COLORS.textMuted} />
+              <View style={[styles.inputWrapper, { backgroundColor: themeColors.surface }, getFieldError('confirmPassword') && [styles.inputError, { borderColor: themeColors.error }]]}>
+                <Feather name="lock" size={20} color={themeColors.textSecondary} />
                 <TextInput
-                  style={[styles.input, styles.passwordInput]}
+                  style={[styles.input, styles.passwordInput, { color: themeColors.textPrimary }]}
                   placeholder="Confirm Password"
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor={themeColors.textSecondary}
                   value={values.confirmPassword}
                   onChangeText={(text) => handleChange('confirmPassword', text)}
                   onBlur={() => handleBlur('confirmPassword')}
@@ -207,25 +207,25 @@ const RegisterScreen = ({ navigation }) => {
                   <Ionicons
                     name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
-                    color={COLORS.textMuted}
+                    color={themeColors.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
               {getFieldError('confirmPassword') && (
-                <Text style={styles.errorText}>{getFieldError('confirmPassword')}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{getFieldError('confirmPassword')}</Text>
               )}
             </View>
 
             {/* Password Requirements */}
-            <View style={styles.passwordRequirements}>
-              <Text style={styles.requirementsTitle}>Password requirements:</Text>
+            <View style={[styles.passwordRequirements, { backgroundColor: themeColors.surface }]}>
+              <Text style={[styles.requirementsTitle, { color: themeColors.textSecondary }]}>Password requirements:</Text>
               <View style={styles.requirement}>
                 <Ionicons
                   name={values.password.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'}
                   size={16}
-                  color={values.password.length >= 8 ? COLORS.success : COLORS.textMuted}
+                  color={values.password.length >= 8 ? COLORS.success : themeColors.textSecondary}
                 />
-                <Text style={[styles.requirementText, values.password.length >= 8 && styles.requirementMet]}>
+                <Text style={[styles.requirementText, { color: themeColors.textSecondary }, values.password.length >= 8 && [styles.requirementMet, { color: themeColors.success }]]}>
                   At least 8 characters
                 </Text>
               </View>
@@ -233,9 +233,9 @@ const RegisterScreen = ({ navigation }) => {
                 <Ionicons
                   name={/(?=.*[a-z])(?=.*[A-Z])/.test(values.password) ? 'checkmark-circle' : 'ellipse-outline'}
                   size={16}
-                  color={/(?=.*[a-z])(?=.*[A-Z])/.test(values.password) ? COLORS.success : COLORS.textMuted}
+                  color={/(?=.*[a-z])(?=.*[A-Z])/.test(values.password) ? COLORS.success : themeColors.textSecondary}
                 />
-                <Text style={[styles.requirementText, /(?=.*[a-z])(?=.*[A-Z])/.test(values.password) && styles.requirementMet]}>
+                <Text style={[styles.requirementText, { color: themeColors.textSecondary }, /(?=.*[a-z])(?=.*[A-Z])/.test(values.password) && [styles.requirementMet, { color: themeColors.success }]]}>
                   Upper and lowercase letters
                 </Text>
               </View>
@@ -243,9 +243,9 @@ const RegisterScreen = ({ navigation }) => {
                 <Ionicons
                   name={/(?=.*\d)/.test(values.password) ? 'checkmark-circle' : 'ellipse-outline'}
                   size={16}
-                  color={/(?=.*\d)/.test(values.password) ? COLORS.success : COLORS.textMuted}
+                  color={/(?=.*\d)/.test(values.password) ? COLORS.success : themeColors.textSecondary}
                 />
-                <Text style={[styles.requirementText, /(?=.*\d)/.test(values.password) && styles.requirementMet]}>
+                <Text style={[styles.requirementText, { color: themeColors.textSecondary }, /(?=.*\d)/.test(values.password) && [styles.requirementMet, { color: themeColors.success }]]}>
                   At least one number
                 </Text>
               </View>
@@ -262,18 +262,18 @@ const RegisterScreen = ({ navigation }) => {
                 style={styles.registerButtonGradient}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator color="#000" size="small" />
+                  <ActivityIndicator color={themeColors.textPrimary} size="small" />
                 ) : (
-                  <Text style={styles.registerButtonText}>Create Account</Text>
+                  <Text style={[styles.registerButtonText, { color: themeColors.textPrimary }]}>Create Account</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
 
             {/* Sign In Link */}
             <View style={styles.signInContainer}>
-              <Text style={styles.signInText}>Already have an account? </Text>
+              <Text style={[styles.signInText, { color: themeColors.textSecondary }]}>Already have an account? </Text>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text style={styles.signInLink}>Sign In</Text>
+                <Text style={[styles.signInLink, { color: themeColors.primary }]}>Sign In</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -286,7 +286,6 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   keyboardContainer: {
     flex: 1,
@@ -305,12 +304,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES['2xl'],
     fontWeight: 'bold',
-    color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   subtitle: {
     fontSize: FONT_SIZES.base,
-    color: COLORS.textMuted,
     lineHeight: 22,
   },
   formContainer: {
@@ -322,7 +319,6 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     borderRadius: SPACING.base,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
@@ -330,13 +326,11 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   inputError: {
-    borderColor: COLORS.error,
   },
   input: {
     flex: 1,
     marginLeft: SPACING.base,
     fontSize: FONT_SIZES.base,
-    color: COLORS.text,
   },
   passwordInput: {
     flex: 1,
@@ -345,7 +339,6 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
   },
   errorText: {
-    color: COLORS.error,
     fontSize: FONT_SIZES.sm,
     marginTop: SPACING.xs,
     marginLeft: SPACING.sm,
@@ -353,11 +346,9 @@ const styles = StyleSheet.create({
   passwordRequirements: {
     marginBottom: SPACING.xl,
     padding: SPACING.md,
-    backgroundColor: COLORS.surface,
     borderRadius: SPACING.base,
   },
   requirementsTitle: {
-    color: COLORS.text,
     fontSize: FONT_SIZES.sm,
     fontWeight: '600',
     marginBottom: SPACING.sm,
@@ -368,12 +359,10 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   requirementText: {
-    color: COLORS.textMuted,
     fontSize: FONT_SIZES.sm,
     marginLeft: SPACING.sm,
   },
   requirementMet: {
-    color: COLORS.success,
   },
   registerButton: {
     marginBottom: SPACING.xl,
@@ -390,7 +379,6 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
   registerButtonText: {
-    color: '#000',
     fontSize: FONT_SIZES.base,
     fontWeight: '600',
   },
@@ -400,11 +388,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signInText: {
-    color: COLORS.textMuted,
     fontSize: FONT_SIZES.base,
   },
   signInLink: {
-    color: COLORS.primary,
     fontSize: FONT_SIZES.base,
     fontWeight: '600',
   },

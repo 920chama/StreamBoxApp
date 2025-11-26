@@ -41,6 +41,7 @@ const DetailsScreen = () => {
   const dispatch = useAppDispatch();
   const favorites = useFavorites();
   const watchlist = useWatchlist();
+  const { themeColors } = useTheme();
   
   const { item, type } = route.params || {};
   const [loading, setLoading] = useState(false);
@@ -213,17 +214,17 @@ const DetailsScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B6B" />
-          <Text style={styles.loadingText}>Loading details...</Text>
+          <ActivityIndicator size="large" color={themeColors.primary} />
+          <Text style={[styles.loadingText, { color: themeColors.textPrimary }]}>Loading details...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
@@ -240,23 +241,23 @@ const DetailsScreen = () => {
               <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={handleBack}>
                   <BlurView intensity={20} style={styles.blurButton}>
-                    <Feather name="arrow-left" size={24} color={COLORS.textPrimary} />
+                    <Feather name="arrow-left" size={24} color={themeColors.textPrimary} />
                   </BlurView>
                 </TouchableOpacity>
                 
                 <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
                   <BlurView intensity={20} style={styles.blurButton}>
-                    <Feather name="share" size={22} color={COLORS.textPrimary} />
+                    <Feather name="share" size={22} color={themeColors.textPrimary} />
                   </BlurView>
                 </TouchableOpacity>
               </View>
 
               {/* Content Info */}
               <View style={styles.heroContent}>
-                <Text style={styles.heroTitle} numberOfLines={2}>
+                <Text style={[styles.heroTitle, { color: themeColors.textPrimary }]} numberOfLines={2}>
                   {details.title}
                 </Text>
-                <Text style={styles.heroSubtitle}>
+                <Text style={[styles.heroSubtitle, { color: themeColors.textSecondary }]}>
                   {details.subtitle}
                 </Text>
                 
@@ -264,20 +265,20 @@ const DetailsScreen = () => {
                 <View style={styles.infoRow}>
                   {details.rating !== 'N/A' && (
                     <View style={styles.ratingBadge}>
-                      <Feather name="star" size={14} color={COLORS.gold} />
-                      <Text style={styles.ratingText}>{details.rating}</Text>
+                      <Feather name="star" size={14} color={themeColors.accent || '#FFD700'} />
+                      <Text style={[styles.ratingText, { color: themeColors.accent || '#FFD700' }]}>{details.rating}</Text>
                     </View>
                   )}
-                  <Text style={styles.infoText}>{details.year}</Text>
-                  <Text style={styles.infoText}>{details.duration}</Text>
-                  <Text style={styles.infoText}>{details.genre}</Text>
+                  <Text style={[styles.infoText, { color: themeColors.textSecondary }]}>{details.year}</Text>
+                  <Text style={[styles.infoText, { color: themeColors.textSecondary }]}>{details.duration}</Text>
+                  <Text style={[styles.infoText, { color: themeColors.textSecondary }]}>{details.genre}</Text>
                 </View>
 
                 {/* Action Buttons */}
                 <View style={styles.actionButtons}>
-                  <TouchableOpacity style={styles.playButton} onPress={handlePlay}>
-                    <Feather name="play" size={20} color={COLORS.background} />
-                    <Text style={styles.playButtonText}>Play</Text>
+                  <TouchableOpacity style={[styles.playButton, { backgroundColor: themeColors.primary }]} onPress={handlePlay}>
+                    <Feather name="play" size={20} color={themeColors.background} />
+                    <Text style={[styles.playButtonText, { color: themeColors.background }]}>Play</Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity 
@@ -287,7 +288,7 @@ const DetailsScreen = () => {
                     <Ionicons 
                       name={isFavorite ? "heart" : "heart-outline"} 
                       size={18} 
-                      color={isFavorite ? "#FF6B6B" : "#fff"} 
+                      color={isFavorite ? themeColors.error : themeColors.textPrimary} 
                     />
                   </TouchableOpacity>
                   
@@ -298,7 +299,7 @@ const DetailsScreen = () => {
                     <Ionicons 
                       name={isInWatchlist ? "bookmark" : "bookmark-outline"} 
                       size={18} 
-                      color={isInWatchlist ? "#FF6B6B" : "#fff"} 
+                      color={isInWatchlist ? themeColors.primary : themeColors.textPrimary} 
                     />
                   </TouchableOpacity>
                 </View>
@@ -308,7 +309,7 @@ const DetailsScreen = () => {
         </View>
 
         {/* Details Section */}
-        <View style={styles.detailsSection}>
+        <View style={[styles.detailsSection, { backgroundColor: themeColors.background }]}>
           {/* Poster and Info */}
           <View style={styles.posterSection}>
             <Image
@@ -320,23 +321,23 @@ const DetailsScreen = () => {
             />
             
             <View style={styles.posterInfo}>
-              <Text style={styles.detailTitle}>{details.title}</Text>
-              <Text style={styles.detailSubtitle}>{details.subtitle}</Text>
+              <Text style={[styles.detailTitle, { color: themeColors.textPrimary }]}>{details.title}</Text>
+              <Text style={[styles.detailSubtitle, { color: themeColors.textSecondary }]}>{details.subtitle}</Text>
               
               {/* Quick Stats */}
               <View style={styles.quickStats}>
                 <View style={styles.statItem}>
-                  <Feather name="clock" size={16} color={COLORS.textTertiary} />
-                  <Text style={styles.statText}>{details.duration}</Text>
+                  <Feather name="clock" size={16} color={themeColors.textSecondary} />
+                  <Text style={[styles.statText, { color: themeColors.textSecondary }]}>{details.duration}</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Feather name="calendar" size={16} color={COLORS.textTertiary} />
-                  <Text style={styles.statText}>{details.year}</Text>
+                  <Feather name="calendar" size={16} color={themeColors.textSecondary} />
+                  <Text style={[styles.statText, { color: themeColors.textSecondary }]}>{details.year}</Text>
                 </View>
                 {details.rating !== 'N/A' && (
                   <View style={styles.statItem}>
-                    <Feather name="star" size={16} color={COLORS.gold} />
-                    <Text style={styles.statText}>{details.rating}</Text>
+                    <Feather name="star" size={16} color={themeColors.accent || '#FFD700'} />
+                    <Text style={[styles.statText, { color: themeColors.textSecondary }]}>{details.rating}</Text>
                   </View>
                 )}
               </View>
@@ -345,32 +346,32 @@ const DetailsScreen = () => {
 
           {/* Description */}
           <View style={styles.descriptionSection}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.descriptionText}>{details.description}</Text>
+            <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>Description</Text>
+            <Text style={[styles.descriptionText, { color: themeColors.textSecondary }]}>{details.description}</Text>
           </View>
 
           {/* Additional Info */}
           <View style={styles.additionalInfo}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Genre</Text>
-              <Text style={styles.infoValue}>{details.genre}</Text>
+            <View style={[styles.infoItem, { borderBottomColor: themeColors.border }]}>
+              <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>Genre</Text>
+              <Text style={[styles.infoValue, { color: themeColors.textPrimary }]}>{details.genre}</Text>
             </View>
             {type === 'movie' && details.year !== 'N/A' && (
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Release Year</Text>
-                <Text style={styles.infoValue}>{details.year}</Text>
+              <View style={[styles.infoItem, { borderBottomColor: themeColors.border }]}>
+                <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>Release Year</Text>
+                <Text style={[styles.infoValue, { color: themeColors.textPrimary }]}>{details.year}</Text>
               </View>
             )}
             {type === 'music' && item?.artistName && (
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Artist</Text>
-                <Text style={styles.infoValue}>{item.artistName}</Text>
+              <View style={[styles.infoItem, { borderBottomColor: themeColors.border }]}>
+                <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>Artist</Text>
+                <Text style={[styles.infoValue, { color: themeColors.textPrimary }]}>{item.artistName}</Text>
               </View>
             )}
             {type === 'podcast' && item?.publisher && (
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Publisher</Text>
-                <Text style={styles.infoValue}>{item.publisher}</Text>
+              <View style={[styles.infoItem, { borderBottomColor: themeColors.border }]}>
+                <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>Publisher</Text>
+                <Text style={[styles.infoValue, { color: themeColors.textPrimary }]}>{item.publisher}</Text>
               </View>
             )}
           </View>
@@ -383,16 +384,13 @@ const DetailsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
   },
   loadingText: {
-    color: '#fff',
     fontSize: 16,
     marginTop: 10,
   },
@@ -433,14 +431,12 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   heroTitle: {
-    color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 8,
     lineHeight: 34,
   },
   heroSubtitle: {
-    color: '#ccc',
     fontSize: 16,
     marginBottom: 15,
   },
@@ -460,13 +456,11 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   ratingText: {
-    color: '#FFD700',
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
   },
   infoText: {
-    color: '#aaa',
     fontSize: 14,
     marginRight: 15,
   },
@@ -476,7 +470,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   playButton: {
-    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 24,
@@ -487,7 +480,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   playButtonText: {
-    color: '#000',
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -500,7 +492,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 107, 107, 0.3)',
   },
   detailsSection: {
-    backgroundColor: '#000',
     paddingHorizontal: 20,
     paddingTop: 20,
   },
@@ -512,7 +503,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 180,
     borderRadius: 12,
-    backgroundColor: '#333',
   },
   posterInfo: {
     flex: 1,
@@ -520,13 +510,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   detailTitle: {
-    color: '#fff',
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 5,
   },
   detailSubtitle: {
-    color: '#888',
     fontSize: 14,
     marginBottom: 15,
   },
@@ -539,20 +527,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statText: {
-    color: '#aaa',
     fontSize: 13,
   },
   descriptionSection: {
     marginBottom: 25,
   },
   sectionTitle: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   descriptionText: {
-    color: '#ccc',
     fontSize: 14,
     lineHeight: 20,
   },
@@ -565,14 +550,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#222',
   },
   infoLabel: {
-    color: '#888',
     fontSize: 14,
   },
   infoValue: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '500',
   },
